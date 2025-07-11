@@ -1,14 +1,14 @@
 
 import pandas as pd
 import matplotlib.pyplot as plt
-
+import matplotlib.dates as mdates
 from langchain_core.tools import tool
 
-DATA_PATH = "data\srag_parcial.csv" 
+DATA_PATH = "data\srag_limpo.parquet" 
 
 def _load_data() -> pd.DataFrame:
     try:
-        df = pd.read_csv(DATA_PATH, sep=";", encoding="latin1", low_memory=False)
+        df = pd.read_parquet(DATA_PATH)
         df['DT_SIN_PRI'] = pd.to_datetime(df['DT_SIN_PRI'], errors='coerce')
         df['DT_EVOLUCA'] = pd.to_datetime(df['DT_EVOLUCA'], errors='coerce') # Data do óbito/cura
         return df.dropna(subset=['DT_SIN_PRI'])
@@ -53,17 +53,23 @@ def generate_daily_cases_plot() -> str:
     end_date = df['DT_SIN_PRI'].max()
     start_date = end_date - pd.Timedelta(days=30)
     
-    daily_cases = df[df['DT_SIN_PRI'] >= start_date].groupby('DT_SIN_PRI').size()
+    daily_cases = df[df['DT_SIN_PRI'] >= start_date].groupby('DT_SIN_PRI').size().sort_index()
     
-    plt.figure(figsize=(12, 6))
-    daily_cases.plot(kind='bar', color='skyblue')
+    plt.figure(figsize=(14, 6))
+    plt.bar(daily_cases.index, daily_cases.values, color='skyblue')
+
     plt.title('Casos Diários de SRAG (Últimos 30 Dias)')
     plt.xlabel('Data')
     plt.ylabel('Número de Casos')
     plt.grid(axis='y', linestyle='--')
+
+    # Formatando o eixo X com datas mais legíveis
+    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%d/%m'))
+    plt.xticks(rotation=45)
+
     plt.tight_layout()
 
-    filename = "data\daily_cases.png"
+    filename = "graficos/daily_cases.png"
     plt.savefig(filename)
     plt.close()
     return f"Gráfico de casos diários salvo em: {filename}"
@@ -91,7 +97,7 @@ def generate_monthly_cases_plot() -> str:
     plt.grid(True, linestyle='--')
     plt.tight_layout()
 
-    filename = "data\monthly_cases.png"
+    filename = "graficos\monthly_cases.png"
     plt.savefig(filename)
     plt.close()
     return f"Gráfico de casos mensais salvo em: {filename}"

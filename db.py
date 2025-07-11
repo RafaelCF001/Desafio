@@ -2,13 +2,13 @@ import duckdb
 import pandas as pd
 from langchain_core.tools import tool
 
-DATA_PATH = "data\srag_parcial.csv"
+DATA_PATH = "data\srag_limpo.parquet"
 
 con = duckdb.connect(database=':memory:', read_only=False)
 
 
 try:
-    con.execute(f"CREATE TABLE srag AS SELECT * FROM read_csv_auto('{DATA_PATH}', sep=';')")
+    con.execute(f"CREATE TABLE srag AS SELECT * FROM read_parquet('{DATA_PATH}')")
     # Fazendo algumas conversões de tipo de dados para garantir que o SQL funcione bem
     con.execute("ALTER TABLE srag ALTER COLUMN DT_SIN_PRI TYPE DATE;")
     con.execute("ALTER TABLE srag ALTER COLUMN DT_EVOLUCA TYPE DATE;")
@@ -49,11 +49,13 @@ def execute_srag_query(query: str) -> str:
 
     # verifica se a consulta é segura 
     query_lower = query.lower()
+    print(query)
     if any(keyword in query_lower for keyword in ['drop', 'delete', 'update', 'insert', 'alter', 'create']):
         return "Erro de segurança: Apenas consultas SELECT são permitidas."
 
     try:
         result_df = con.execute(query).fetchdf()
+        print(result_df)
         return result_df.to_markdown()
     except Exception as e:
         return f"Erro ao executar a consulta: {e}. Por favor, verifique a sintaxe da sua consulta SQL e os nomes das colunas."
