@@ -1,0 +1,5 @@
+.env
+tools/__pycache__/data_analysis.cpython-310.pyc
+tools/__pycache__/srag_news.cpython-310.pyc
+data/INFLUD25-07-07-2025.csv
+data/srag_parcial.csv
