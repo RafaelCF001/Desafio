@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage
-from teste import app
+from orchestrator import app
 
 
 def run_report():
@@ -27,5 +27,4 @@ def run_report():
    
 if __name__ == "__main__":
     load_dotenv()
-    print(os.environ.get("OPENAI_API_KEY", "Chave"))
     run_report()
